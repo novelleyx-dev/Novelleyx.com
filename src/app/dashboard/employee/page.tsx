@@ -6,6 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 export default async function EmployeeDashboardPage() {

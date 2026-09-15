@@ -2,6 +2,8 @@ import React from 'react';
 import { Users, Filter, ArrowRight, UserCheck, Inbox } from 'lucide-react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';

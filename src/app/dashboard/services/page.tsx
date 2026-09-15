@@ -1,6 +1,8 @@
 import React from 'react';
 import { Layers, TrendingUp, Sparkles } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';

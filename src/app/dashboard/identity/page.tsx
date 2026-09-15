@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import IdentityClientView from './IdentityClientView';
 
 export default async function IdentityGenerator() {
