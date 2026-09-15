@@ -1,0 +1,598 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  FOUNDER
+  MANAGER
+  TEAM_LEAD
+  TEAM_MEMBER
+  APPRAISAL_REVIEWER
+  CUSTOMER
+  PILLAR_LEAD
+  CLIENT
+}
+
+enum CustomerType {
+  STUDENT
+  CREATOR
+  STARTUP
+  BUSINESS
+  COMPANY
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL_SENT
+  CONVERTED
+  LOST
+}
+
+enum CategoryType {
+  MEDIA
+  IT
+  AI
+  EDUCATION
+}
+
+enum PricingType {
+  STARTING_FROM
+  CUSTOM
+  APPRAISAL_REQUIRED
+  MONTHLY
+}
+
+enum AISessionStatus {
+  ACTIVE
+  COMPLETED
+  CONVERTED_TO_REQUIREMENT
+  ARCHIVED
+}
+
+enum MessageRole {
+  USER
+  SYSTEM
+  ASSISTANT
+}
+
+enum RequirementStatus {
+  DRAFT
+  ANALYZING
+  READY_FOR_REVIEW
+  APPRAISAL_REQUESTED
+  CONVERTED
+  CLOSED
+}
+
+enum AppraisalStatus {
+  PENDING
+  IN_REVIEW
+  COMPLETED
+  REJECTED
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DocumentType {
+  REQUIREMENT
+  APPRAISAL
+  PROPOSAL
+  CONTRACT
+  INVOICE
+  DELIVERABLE
+  OTHER
+}
+
+enum DocumentVisibility {
+  INTERNAL
+  CLIENT
+  PUBLIC
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  SPAM
+}
+
+enum NotificationType {
+  LEAD_CREATED
+  REQUIREMENT_UPDATED
+  APPRAISAL_READY
+  PROPOSAL_ACCEPTED
+  TASK_ASSIGNED
+  MESSAGE_RECEIVED
+  SYSTEM_ALERT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  role          Role      @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  customerProfile Customer?
+  teamProfile     TeamMember?
+  
+  assignedLeads       Lead[]
+  aiSessions          AISession[]
+  createdRequirements Requirement[]
+  reviewedAppraisals  Appraisal[]
+  createdProposals    Proposal[]
+  projectMemberships  ProjectMember[]
+  assignedTasks       Task[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  accounts            Account[]
+  sessions            Session[]
+  employeeProfile     Employee?
+}
+
+model Customer {
+  id            String       @id @default(cuid())
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id])
+  type          CustomerType
+  companyName   String?
+  phone         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  leads         Lead[]
+  projects      Project[]
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  customerId    String
+  customer      Customer   @relation(fields: [customerId], references: [id])
+  assignedToId  String?
+  assignedTo    User?      @relation(fields: [assignedToId], references: [id])
+  status        LeadStatus @default(NEW)
+  leadScore     Int        @default(0)
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  requirements  Requirement[]
+}
+
+model ServiceCategory {
+  id          String       @id @default(cuid())
+  name        String
+  type        CategoryType
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  services    Service[]
+}
+
+model Service {
+  id            String          @id @default(cuid())
+  categoryId    String
+  category      ServiceCategory @relation(fields: [categoryId], references: [id])
+  name          String
+  description   String
+  pricingType   PricingType
+  startingPrice Float?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  bundleLinks   BundleService[]
+}
+
+model Bundle {
+  id          String          @id @default(cuid())
+  name        String
+  description String
+  price       Float?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  services    BundleService[]
+}
+
+model BundleService {
+  id        String   @id @default(cuid())
+  bundleId  String
+  bundle    Bundle   @relation(fields: [bundleId], references: [id])
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+  
+  @@unique([bundleId, serviceId])
+}
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  designation String
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  skills      TeamMemberSkill[]
+}
+
+model Skill {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  
+  teamMembers TeamMemberSkill[]
+}
+
+model TeamMemberSkill {
+  id           String     @id @default(cuid())
+  teamMemberId String
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id])
+  skillId      String
+  skill        Skill      @relation(fields: [skillId], references: [id])
+  proficiency  Int?
+  
+  @@unique([teamMemberId, skillId])
+}
+
+model AISession {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  status    AISessionStatus @default(ACTIVE)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  messages  AIMessage[]
+  requirements Requirement[]
+}
+
+model AIMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   AISession   @relation(fields: [sessionId], references: [id])
+  role      MessageRole
+  content   String
+  createdAt DateTime    @default(now())
+}
+
+model Requirement {
+  id          String            @id @default(cuid())
+  leadId      String?
+  lead        Lead?             @relation(fields: [leadId], references: [id])
+  sessionId   String?
+  session     AISession?        @relation(fields: [sessionId], references: [id])
+  creatorId   String
+  creator     User              @relation(fields: [creatorId], references: [id])
+  status      RequirementStatus @default(DRAFT)
+  details     String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  recommendations Recommendation[]
+  appraisals      Appraisal[]
+}
+
+model Recommendation {
+  id            String      @id @default(cuid())
+  requirementId String
+  requirement   Requirement @relation(fields: [requirementId], references: [id])
+  details       String
+  createdAt     DateTime    @default(now())
+}
+
+model Appraisal {
+  id            String          @id @default(cuid())
+  requirementId String
+  requirement   Requirement     @relation(fields: [requirementId], references: [id])
+  reviewerId    String?
+  reviewer      User?           @relation(fields: [reviewerId], references: [id])
+  status        AppraisalStatus @default(PENDING)
+  totalAmount   Float?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  items         AppraisalItem[]
+  proposals     Proposal[]
+}
+
+model AppraisalItem {
+  id          String    @id @default(cuid())
+  appraisalId String
+  appraisal   Appraisal @relation(fields: [appraisalId], references: [id])
+  description String
+  cost        Float
+  createdAt   DateTime  @default(now())
+}
+
+model Proposal {
+  id          String         @id @default(cuid())
+  appraisalId String
+  appraisal   Appraisal      @relation(fields: [appraisalId], references: [id])
+  creatorId   String
+  creator     User           @relation(fields: [creatorId], references: [id])
+  status      ProposalStatus @default(DRAFT)
+  validUntil  DateTime?
+  documentUrl String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  projects    Project[]
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  proposalId  String?
+  proposal    Proposal?     @relation(fields: [proposalId], references: [id])
+  status      ProjectStatus @default(PLANNING)
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  members     ProjectMember[]
+  tasks       Task[]
+  documents   Document[]
+  clientMilestones ClientProjectMilestone[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      String
+  
+  @@unique([projectId, userId])
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id])
+  assigneeId  String?
+  assignee    User?        @relation(fields: [assigneeId], references: [id])
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Document {
+  id          String             @id @default(cuid())
+  projectId   String
+  project     Project            @relation(fields: [projectId], references: [id])
+  type        DocumentType
+  title       String
+  url         String
+  visibility  DocumentVisibility @default(INTERNAL)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model ContactRequest {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  eventType String
+  payload   String?
+  createdAt DateTime @default(now())
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model ClientProjectMilestone {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  status      String   @default("PENDING")
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum CredentialStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  REVOKED
+  EXPIRED
+  REPLACED
+}
+
+enum VerificationMethod {
+  QR
+  BARCODE
+  EMPLOYEE_ID
+  NFC
+  ADMIN_SCAN
+}
+
+enum VerificationResult {
+  VERIFIED
+  INVALID
+  REVOKED
+  INACTIVE
+  SUSPENDED
+  EXPIRED
+}
+
+model Employee {
+  id              String         @id @default(cuid())
+  employeeId      String         @unique // NX0001
+  userId          String?        @unique
+  user            User?          @relation(fields: [userId], references: [id])
+  fullName        String
+  profilePhoto    String?
+  designation     String
+  role            String
+  department      String
+  joiningDate     DateTime
+  employmentType  String
+  status          EmployeeStatus @default(ACTIVE)
+  email           String?
+  phone           String?
+  signature       String?
+  verificationStatus String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  credentials     EmployeeCredential[]
+}
+
+model EmployeeCredential {
+  id                 String           @id @default(cuid())
+  employeeId         String
+  employee           Employee         @relation(fields: [employeeId], references: [id])
+  credentialPublicId String           @unique
+  credentialHash     String?
+  credentialVersion  Int              @default(1)
+  status             CredentialStatus @default(ACTIVE)
+  issuedAt           DateTime         @default(now())
+  activatedAt        DateTime?
+  expiresAt          DateTime?
+  revokedAt          DateTime?
+  revocationReason   String?
+  replacedBy         String?
+  createdBy          String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  verificationLogs   CredentialVerificationLog[]
+}
+
+model CredentialVerificationLog {
+  id                 String             @id @default(cuid())
+  credentialId       String
+  credential         EmployeeCredential @relation(fields: [credentialId], references: [id])
+  verificationResult VerificationResult
+  verificationMethod VerificationMethod
+  ipHash             String?
+  userAgent          String?
+  timestamp          DateTime           @default(now())
+}
+

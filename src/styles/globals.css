@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --z-void: -10;
+    --z-foundation: 0;
+    --z-floating: 20;
+    --z-orbit: 50;
+  }
+
+  body {
+    @apply bg-[#050505] text-white antialiased overflow-x-hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-white font-bold tracking-tight;
+  }
+  
+  p {
+    @apply text-neutral-400 leading-relaxed;
+  }
+  
+  ::selection {
+    @apply bg-amber-500/30 text-white;
+  }
+  
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-[#050505];
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-amber-500/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-amber-500/50;
+  }
+}
+
+@layer components {
+  .gold-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400;
+  }
+  
+  .gold-border {
+    @apply border border-amber-500/20;
+  }
+  
+  .gold-border-hover {
+    @apply hover:border-amber-500/50 transition-all duration-300;
+  }
+  
+  .section-padding {
+    @apply px-6 md:px-12 lg:px-24 py-24 lg:py-32;
+  }
+  
+  .glass-panel {
+    @apply bg-neutral-900/40 backdrop-blur-md border border-white/5 rounded-2xl relative overflow-hidden transition-all duration-300;
+  }
+  
+  .glass-card-hover {
+    @apply hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  
+  .glass-card-hover:hover {
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.1);
+  }
+
+  .glass-pill {
+    @apply bg-neutral-900/40 backdrop-blur-md border border-white/10 rounded-full;
+  }
+
+  .glow-gold {
+    position: relative;
+  }
+  
+  .glow-gold::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 40px -10px rgba(245, 158, 11, 0.3);
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .glow-gold-hover {
+    position: relative;
+  }
+  
+  .glow-gold-hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 60px -10px rgba(245, 158, 11, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .glow-gold-hover:hover::after {
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

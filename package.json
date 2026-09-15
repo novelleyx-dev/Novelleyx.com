@@ -1,0 +1,43 @@
+{
+  "name": "novelleyx",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^4.0.71",
+    "@auth/prisma-adapter": "^2.11.3",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.9.0",
+    "ai": "^7.0.91",
+    "framer-motion": "^12.12.1",
+    "lucide-react": "^0.511.0",
+    "next": "14.2.29",
+    "next-auth": "^4.24.15",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.3.1",
+    "react-barcode": "^1.6.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^3.10.1",
+    "xlsx": "^0.18.5",
+    "zod": "^3.25.17",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.29",
+    "postcss": "^8.5.3",
+    "prisma": "^6.9.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3"
+  }
+}
